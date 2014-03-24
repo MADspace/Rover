@@ -1,4 +1,5 @@
 import time, Queue
+import servo
 
 class Servo:
 
@@ -32,6 +33,7 @@ class Wheel:
     A positive value orients the wheel to the right, while a negative value turns it to the left
     """
     def set_rotation(self, radians):
+        servo.set_value(0, 320 + int(float(radians) * 50))
         if self.servo_steer:
             self.rotation = radians
             pass # TODO
