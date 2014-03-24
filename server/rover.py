@@ -56,7 +56,7 @@ class Wheel:
     """
     Stop the wheel dead in its track
     """
-    def stop():
+    def stop(self):
         self.set_speed(0)
 
 class DriveTrain:
@@ -94,6 +94,20 @@ class DriveTrain:
         self.front_right.stop()
         self.center_right.stop()
         self.back_right.stop()
+
+    def speed(self, speed):
+        self.front_left.set_speed(speed)
+        self.center_left.set_speed(speed)
+        self.back_left.set_speed(speed)
+        self.front_right.set_speed(speed)
+        self.center_right.set_speed(speed)
+        self.back_right.set_speed(speed)
+
+    def straight(self):
+        self.front_left.straight()
+        self.back_left.straight()
+        self.front_right.straight()
+        self.back_right.straight()
 
 class Rover:
 

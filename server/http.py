@@ -10,6 +10,18 @@ class Status:
     def GET(self):
         return json.dumps(rover.as_dict())
 
+class Stop:
+    def POST(self):
+        rover.drivetrain.stop()
+
+class Straight:
+    def POST(self):
+        rover.drivetrain.straight()
+
+class Speed:
+    def POST(self):
+        rover.drivetrain.speed(float(web.data()))
+
 class UpdateWheel:
     def POST(self, wheel_name):
         wheel_data = json.loads(web.data())
@@ -24,6 +36,9 @@ class UpdateWheel:
 def start_webapp(rover):
     urls = (
         '/status', 'Status',
+        '/control/stop', 'Stop',
+        '/control/straight', 'Straight',
+        '/control/speed', 'Speed',
         '/update/wheel/(.+)', 'UpdateWheel',
         '/(.*)', 'Main'
     )

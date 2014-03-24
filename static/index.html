@@ -22,7 +22,22 @@
       }
       tick();
 
+      $scope.stop = function() {
+          $http.post('/control/stop');
+      }
 
+      $scope.straight = function() {
+          $http.post('/control/straight');
+      }
+
+      $scope.$watch('speed', function(speed) {
+          if(speed)
+            $http.post('/control/speed', speed);
+      });
+
+      /**
+       *
+       */
       var wheels = ['front_left', 'center_left', 'back_left', 'front_right', 'center_right', 'back_right'];
       for(id in wheels) {
           (function() {
@@ -42,9 +57,9 @@
           template:
             '<h3>{{name}}</h3>'
           + 'Speed: {{wheel.speed}} meters per second<br />'
-          + '<input type="range" min="0" max="1" step="0.01" ng-model="wheel.speed" pause-polling><br />'
-          + ' Rotation: {{wheel.rotation}} radians<br />'
-          + '<input type="range" min="-2" max="2" step="0.02" ng-model="wheel.rotation" ng-hide="center" pause-polling>'
+          + '<input type="range" min="-0.5" max="0.5" step="0.01" ng-model="wheel.speed" pause-polling><br />'
+          + '<span ng-hide="center">Rotation: {{wheel.rotation}} radians<br />'
+          + '<input type="range" min="-2" max="2" step="0.02" ng-model="wheel.rotation" pause-polling></span>'
       };
   }).directive('pausePolling', function($rootScope) {
       return {
@@ -87,5 +102,8 @@
     </div>
   </div>
 
+  <button ng-click="stop()">Stop</button>
+  <button ng-click="straight()">Straight</button>
+  <input type="range" min="-0.5" max="0.5" step="0.01" ng-model="speed">
 </body>
 </html>
