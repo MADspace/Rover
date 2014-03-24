@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="RoverApp">
+<head>
+  <meta charset="utf-8">
+  <title>MadSpace Rover</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.3/angular.min.js"></script>
+  <script type="text/javascript">
+  angular.module('RoverApp', [])
+    .controller('RoverController', function($scope, $rootScope, $http, $timeout) {
+      var tick = function() {
+          $http.get('status').success(function (rover) {
+              if(!$rootScope.paused) {
+                  $scope.updating = true;
+                  $scope.rover = rover;
+
+                  $timeout(function() {$scope.updating = false});
+              }
+              $timeout(tick, 100);
+          });
+      }
+      tick();
+
+
+      var wheels = ['front_left', 'center_left', 'back_left', 'front_right', 'center_right', 'back_right'];
+      for(id in wheels) {
+          (function() {
+              var wheel_name = wheels[id];
+              $scope.$watch('rover.drivetrain.' + wheel_name, function(obj) {
+                  if(obj && !$scope.updating) {
+                     $http.post('/update/wheel/' + wheel_name, obj);
+                  }
+              }, true);
+          })();
+      }
+
+
+  }).directive('wheel', function() {
+      return {
+          scope: {wheel: '=', 'name': '=', 'center': '='},
+          template:
+            '<h3>{{name}}</h3>'
+          + 'Speed: {{wheel.speed}} meters per second<br />'
+          + '<input type="range" min="0" max="1" step="0.01" ng-model="wheel.speed" pause-polling><br />'
+          + ' Rotation: {{wheel.rotation}} radians<br />'
+          + '<input type="range" min="-2" max="2" step="0.02" ng-model="wheel.rotation" ng-hide="center" pause-polling>'
+      };
+  }).directive('pausePolling', function($rootScope) {
+      return {
+          link: function(scope, element) {
+            element.on('mousedown focus', function() {
+                $rootScope.paused = true;
+            }).on('mouseup blur', function() {
+                $rootScope.paused = false;
+            })
+          }
+      }
+  });
+
+  ;
+  </script>
+  <style>
+  div.wheel {
+      border: 1px solid black;
+  }
+
+  div.drivetrain_side {
+      float: left;
+      width: 300px;
+  }
+  </style>
+</head>
+<body ng-controller="RoverController">
+
+  <div id="drivetrain">
+    <div class="drivetrain_side">
+      <div class="wheel" wheel="rover.drivetrain.front_left" name="'Front Left'"></div>
+      <div class="wheel" wheel="rover.drivetrain.center_left" name="'Center Left'" center="true"></div>
+      <div class="wheel" wheel="rover.drivetrain.back_left" name="'Back Left'"></div>
+    </div>
+
+    <div class="drivetrain_side">
+      <div class="wheel" wheel="rover.drivetrain.front_right" name="'Front Right'"></div>
+      <div class="wheel" wheel="rover.drivetrain.center_right" name="'Center Right'" center="true"></div>
+      <div class="wheel" wheel="rover.drivetrain.back_right" name="'Back Right'"></div>
+    </div>
+  </div>
+
+</body>
+</html>
