@@ -1,15 +1,37 @@
-import time, Queue
+import time, Queue, math
 import servo
 
-class Servo:
+class Servo(object):
+    # Rotation servo parameters
+    center_rotation_pulse = 1.5 / 1000
+    quarter_rotation_pulse = 0.5 / 1000
+
+    # Continuous servo parameters
+    stopped_speed_pulse = 1.5 / 1000
+    full_speed_pulse = 0.5 / 1000 # Amount of pulse duration to add/subtract to the stopped_speed_pulse to get the servo to reach it maximum speed
+    max_rotations_per_second = 60 / 60 # Rotation speed at maximum speed
 
     def __init__(self, channel):
-        self.channel = channel;
+        self.channel = channel
+
+    def set_rotation(self, radians):
+        if radians < -math.pi/2 or radians > math.pi/2:
+            raise Exception("Servo can only rotate between -90 and 90 degrees")
+
+        pulse_duration = radians / (math.pi / 2) * Servo.quarter_rotation_pulse + Servo.center_rotation_pulse
+        servo.set_value(self.channel, pulse_duration)
+
+    def set_speed(self, rotations_per_second):
+        if math.abs(rotations_per_second) > max_rotations_per_second:
+            raise Exception("Servo cannot rotate at %f rpm. Max rpm is %f" % (rpm, Servo.max_rotations_per_second))
+
+        pulse_duration = rotations_per_second / Servo.max_rotations_per_second * Servo.full_speed_pulse + Servo.stopped_speed_pulse
+        servo.set_value(self.channel, pulse_duration)
 
 
-class Wheel:
-                #TODO
-    diameter = 0.2 # in meters
+class Wheel(object):
+    diameter = 0.092569 # in meters
+    circumference = Wheel.diameter * math.pi
 
     """
     Represents one of the six wheels of the rover.
@@ -33,7 +55,6 @@ class Wheel:
     A positive value orients the wheel to the right, while a negative value turns it to the left
     """
     def set_rotation(self, radians):
-        servo.set_value(0, 320 + int(float(radians) * 50))
         if self.servo_steer:
             self.rotation = radians
             pass # TODO
