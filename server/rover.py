@@ -4,7 +4,7 @@ import servo
 class Servo(object):
     # Rotation servo parameters
     center_rotation_pulse = 1.5 / 1000
-    quarter_rotation_pulse = 0.5 / 1000
+    quarter_rotation_pulse = 0.9 / 1000
 
     # Continuous servo parameters
     stopped_speed_pulse = 1.5 / 1000
@@ -31,7 +31,7 @@ class Servo(object):
 
 class Wheel(object):
     diameter = 0.092569 # in meters
-    circumference = Wheel.diameter * math.pi
+    circumference = diameter * math.pi
 
     """
     Represents one of the six wheels of the rover.
@@ -57,7 +57,7 @@ class Wheel(object):
     def set_rotation(self, radians):
         if self.servo_steer:
             self.rotation = radians
-            pass # TODO
+            self.servo_steer.set_rotation(radians)
         else:
             raise "This wheel cannot be rotated"
 

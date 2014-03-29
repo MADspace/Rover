@@ -28,7 +28,7 @@ class UpdateWheel:
         wheel = getattr(rover.drivetrain, wheel_name)
 
         if 'center' not in wheel_name:
-            wheel.set_rotation(wheel_data['rotation'])
+            wheel.set_rotation(float(wheel_data['rotation']))
 
         wheel.set_speed(wheel_data['speed'])
 
