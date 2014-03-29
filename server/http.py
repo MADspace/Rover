@@ -14,6 +14,12 @@ class Stop:
     def POST(self):
         rover.drivetrain.stop()
 
+class Control:
+    def POST(self):
+        control_data = json.loads(web.data())
+        print control_data
+        rover.control_joystick(float(control_data['steer_axis']), float(control_data['drive_axis']), float(control_data['rotate_axis']))
+
 class Straight:
     def POST(self):
         rover.drivetrain.straight()
@@ -36,6 +42,7 @@ class UpdateWheel:
 def start_webapp(rover):
     urls = (
         '/status', 'Status',
+        '/control', 'Control',
         '/control/stop', 'Stop',
         '/control/straight', 'Straight',
         '/control/speed', 'Speed',

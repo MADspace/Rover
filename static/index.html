@@ -9,6 +9,8 @@
   <script type="text/javascript">
   angular.module('RoverApp', [])
     .controller('RoverController', function($scope, $rootScope, $http, $timeout) {
+      $scope.control = {'drive_axis': 0, 'steer_axis': 0, 'rotate_axis': 0};
+
       var tick = function() {
           $http.get('status').success(function (rover) {
               if(!$rootScope.paused) {
@@ -17,7 +19,7 @@
 
                   $timeout(function() {$scope.updating = false});
               }
-              //$timeout(tick, 2000);
+              $timeout(tick, 1000);
           });
       }
       tick();
@@ -34,6 +36,12 @@
           if(speed)
             $http.post('/control/speed', speed);
       });
+
+      $scope.$watch('control', function(control) {
+          console.log('CONTROL!', control)
+          if(control)
+              $http.post('/control', control);
+        }, true);
 
       /**
        *
@@ -57,9 +65,9 @@
           template:
             '<h3>{{name}}</h3>'
           + 'Speed: {{wheel.speed}} meters per second<br />'
-          + '<input type="range" min="-0.5" max="0.5" step="0.01" ng-model="wheel.speed" pause-polling><br />'
+          + '<input type="range" min="-0.25" max="0.25" step="0.01" ng-model="wheel.speed" pause-polling><br />'
           + '<span ng-hide="center">Rotation: {{wheel.rotation}} radians<br />'
-          + '<input type="range" min="-2" max="2" step="0.02" ng-model="wheel.rotation" pause-polling></span>'
+          + '<input type="range" min="-0.2" max="2" step="0.02" ng-model="wheel.rotation" pause-polling></span>'
       };
   }).directive('pausePolling', function($rootScope) {
       return {
@@ -106,9 +114,13 @@
     </div>
   </div>
 
-  <button ng-click="stop()">Stop{{rover.drivetrain.front_left}}</button>
+  <button ng-click="stop()">Stop</button>
   <button ng-click="straight()">Straight</button>
-  <input type="range" min="-0.5" max="0.5" step="0.01" ng-model="speed">
+  <br />
+
+  Sturen: <input type="range" min="-1" max="1" step="0.02" ng-model="control.steer_axis" pause-polling><input ng-model="control.steer_axis"><br />
+  Snelheid: <input type="range" min="-1" max="1" step="0.02" ng-model="control.drive_axis" pause-polling><input ng-model="control.drive_axis"><br />
+  Speed: <input type="range" min="-0.5" max="0.5" step="0.01" ng-model="speed"><br />
   <svg width="300" height="300" style="border: 1px solid black;" viewBox="-0.5 -0.5 1 1">
       <g ng-attr-transform="translate({{rover.drivetrain.front_left.x}}, {{-rover.drivetrain.front_left.y}}) rotate({{rover.drivetrain.front_left.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
       <g ng-attr-transform="translate({{rover.drivetrain.center_left.x}}, {{-rover.drivetrain.center_left.y}}) rotate({{rover.drivetrain.center_left.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>

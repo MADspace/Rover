@@ -59,7 +59,7 @@ class Wheel(object):
             self.rotation = radians
             self.servo_steer.set_rotation(radians)
         else:
-            raise "This wheel cannot be rotated"
+            pass
 
     """
     Set the wheel in a straight forward moving position (no turning)
@@ -74,7 +74,7 @@ class Wheel(object):
     """
     def set_speed(self, speed):
         self.speed = speed
-        pass # TODO
+        self.servo_drive.set_rotation(speed / Wheel.circumference)
 
     """
     Stop the wheel dead in its track
@@ -83,7 +83,20 @@ class Wheel(object):
         self.set_speed(0)
 
     def drive(self, speed, turning_radius):
-        print 'drive!', speed, turning_radius
+        # TODO: ramp
+        if turning_radius == 0:
+            wheel_speed = speed
+            wheel_rotation = 0
+        else:
+            wheel_speed = math.fabs(math.sqrt(self.position_y*self.position_y + ((turning_radius - self.position_x)*(turning_radius - self.position_x))) / turning_radius * speed)
+            if speed < 0:
+                wheel_speed = -wheel_speed
+
+            wheel_rotation = math.atan2(self.position_y, turning_radius-self.position_x)
+
+        self.set_speed(wheel_speed)
+        self.set_rotation(wheel_rotation)
+
 
 class DriveTrain:
     ROTATION_SPEED = 0.1
@@ -97,6 +110,7 @@ class DriveTrain:
         self.center_right = Wheel(Servo(7), None, 0.1, 0)
         self.back_right   = Wheel(Servo(8), Servo(9), 0.1, -0.18)
         self.wheels = [self.front_left, self.center_left, self.back_left, self.front_right, self.center_right, self.back_right]
+        self.rotating_wheels = [self.front_left, self.back_left, self.front_right, self.back_right]
 
     def as_dict(self):
         return {'front_left': self.front_left.as_dict(),
@@ -156,7 +170,7 @@ class Rover:
             max_speed = Wheel.circumference * Servo.max_rotations_per_second * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
             speed = drive_axis * max_speed
 
-            minimum_turning_radius = 1 # In meters
+            minimum_turning_radius = 0.3 # In meters
             if steer_axis == 0:
                 turning_radius = 0
             else:
