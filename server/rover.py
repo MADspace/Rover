@@ -31,7 +31,7 @@ class Servo(object):
 
 class Wheel(object):
     diameter = 0.092569 # in meters
-    circumference = Wheel.diameter * math.pi
+    circumference = diameter * math.pi
 
     """
     Represents one of the six wheels of the rover.
@@ -42,8 +42,8 @@ class Wheel(object):
     def __init__(self, servo_drive, servo_steer, position_x, position_y):
         self.servo_drive = servo_drive
         self.servo_steer = servo_steer
-        self.position_x = position_x
-        self.position_y = position_y
+        self.position_x = position_x # The right of the rover is +x
+        self.position_y = position_y # The front of the rover is +y
         self.speed = 0
         self.rotation = 0
 
@@ -82,16 +82,21 @@ class Wheel(object):
     def stop(self):
         self.set_speed(0)
 
+    def drive(self, speed, turning_radius):
+        print 'drive!', speed, turning_radius
+
 class DriveTrain:
     ROTATION_SPEED = 0.1
 
     def __init__(self):
-        self.front_left   = Wheel(Servo(1), Servo(2), 0, 0)
-        self.center_left  = Wheel(Servo(3), None, 0, 0)
-        self.back_left    = Wheel(Servo(4), Servo(5), 0, 0)
-        self.front_right  = Wheel(Servo(6), Servo(7), 0, 0)
-        self.center_right = Wheel(Servo(8), None, 0, 0)
-        self.back_right   = Wheel(Servo(9), Servo(10), 0, 0)
+
+        self.front_left   = Wheel(Servo(0), Servo(1), -0.1, 0.22)
+        self.center_left  = Wheel(Servo(2), None, -0.1, 0)
+        self.back_left    = Wheel(Servo(3), Servo(4), -0.1, -0.18)
+        self.front_right  = Wheel(Servo(5), Servo(6), 0.1, 0.22)
+        self.center_right = Wheel(Servo(7), None, 0.1, 0)
+        self.back_right   = Wheel(Servo(8), Servo(9), 0.1, -0.18)
+        self.wheels = [self.front_left, self.center_left, self.back_left, self.front_right, self.center_right, self.back_right]
 
     def as_dict(self):
         return {'front_left': self.front_left.as_dict(),
@@ -105,7 +110,8 @@ class DriveTrain:
 
     """
     def drive(self, speed, turning_radius):
-        pass
+        for wheel in self.wheels:
+            wheel.drive(speed, turning_radius)
 
     def rotate(self, radians):
         pass
@@ -144,8 +150,22 @@ class Rover:
     def as_dict(self):
         return {'drivetrain': self.drivetrain.as_dict()}
 
+    def control_joystick(self, steer_axis, drive_axis, rotate_axis):
+        if rotate_axis == 0:
+            # Normal steering
+            max_speed = Wheel.circumference * Servo.max_rotations_per_second * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
+            speed = drive_axis * max_speed
 
-class Command:
-    pass
+            minimum_turning_radius = 1 # In meters
+            if steer_axis == 0:
+                turning_radius = 0
+            else:
+                turning_radius = minimum_turning_radius / steer_axis
+
+            self.drivetrain.drive(speed, turning_radius)
+
+        else:
+            # In place rotating
+            pass
 
 
