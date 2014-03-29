@@ -9,9 +9,9 @@ pwm.setPWMFreq(frequency)
 Set the length of the pulse in seconds
 """
 def set_value(channel, duration):
-    period = 1 / frequency
+    period = 1.0 / frequency
     if duration > period:
-        raise Exception("Cannot set duration to %f, period is only %f", duration, period)
+        raise Exception("Cannot set duration to %f, period is only %f" % (duration, period))
 
     value = duration / period * 4096
     pwm.setPWM(channel, 0, int(value))
