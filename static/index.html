@@ -32,13 +32,7 @@
           $http.post('/control/straight');
       }
 
-      $scope.$watch('speed', function(speed) {
-          if(speed)
-            $http.post('/control/speed', speed);
-      });
-
       $scope.$watch('control', function(control) {
-          console.log('CONTROL!', control)
           if(control)
               $http.post('/control', control);
         }, true);
@@ -119,8 +113,7 @@
   <br />
 
   Sturen: <input type="range" min="-1" max="1" step="0.02" ng-model="control.steer_axis" pause-polling><input ng-model="control.steer_axis"><br />
-  Snelheid: <input type="range" min="-1" max="1" step="0.02" ng-model="control.drive_axis" pause-polling><input ng-model="control.drive_axis"><br />
-  Speed: <input type="range" min="-0.5" max="0.5" step="0.01" ng-model="speed"><br />
+  Snelheid: <input type="range" min="-1" max="1" step="0.02" ng-model="control.drive_axis" style="-webkit-appearance: slider-vertical" pause-polling><input ng-model="control.drive_axis"><br />
   <svg width="300" height="300" style="border: 1px solid black;" viewBox="-0.5 -0.5 1 1">
       <g ng-attr-transform="translate({{rover.drivetrain.front_left.x}}, {{-rover.drivetrain.front_left.y}}) rotate({{rover.drivetrain.front_left.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
       <g ng-attr-transform="translate({{rover.drivetrain.center_left.x}}, {{-rover.drivetrain.center_left.y}}) rotate({{rover.drivetrain.center_left.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
