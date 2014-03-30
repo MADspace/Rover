@@ -1,5 +1,10 @@
 import time, Queue, math
-import servo
+#import servo
+
+def clamp(val, minval, maxval):
+    if val < minval: return minval
+    if val > maxval: return maxval
+    return val
 
 class Servo(object):
     def __init__(self, channel, neutral_pulse, full_pulse_offset):
@@ -73,7 +78,6 @@ class Wheel(object):
         self.set_speed(0)
 
     def drive(self, speed, turning_radius):
-        # TODO: ramp
         if turning_radius == 0:
             wheel_speed = speed
             wheel_rotation = 0
@@ -93,12 +97,12 @@ class DriveTrain:
 
     def __init__(self):
 
-        self.front_left   = Wheel(Servo(0, 1.62 / 1000, 0.052 / 1000), Servo(1, 1.4 / 1000, 1.1 / 1000), -0.1, 0.22)
-        self.center_left  = Wheel(Servo(2, 1.63 / 1000, 0.05881 / 1000), None, -0.1, 0)
-        self.back_left    = Wheel(Servo(3, 1.615 / 1000, 0.0588 / 1000), Servo(4, 1.5 / 1000, 1.1 / 1000), -0.1, -0.18)
-        self.front_right  = Wheel(Servo(5, 1.57 / 1000, -0.054 / 1000), Servo(6, 1.5 / 1000, 1.1 / 1000), 0.1, 0.22)
-        self.center_right = Wheel(Servo(7, 1.615 / 1000, -0.055 / 1000), None, 0.1, 0)
-        self.back_right   = Wheel(Servo(8, 1.62 / 1000, -0.055 / 1000), Servo(9, 1.5 / 1000, 1.1 / 1000), 0.1, -0.18)
+        self.front_left   = Wheel(Servo(0, 1.62 / 1000, 0.052 / 1000), Servo(1, 1.4 / 1000, 1.1 / 1000), -0.16, 0.22)
+        self.center_left  = Wheel(Servo(2, 1.63 / 1000, 0.05881 / 1000), None, -0.19, 0)
+        self.back_left    = Wheel(Servo(3, 1.615 / 1000, 0.0588 / 1000), Servo(4, 1.5 / 1000, 1.1 / 1000), -0.15, -0.18)
+        self.front_right  = Wheel(Servo(5, 1.57 / 1000, -0.054 / 1000), Servo(6, 1.5 / 1000, 1.1 / 1000), 0.16, 0.22)
+        self.center_right = Wheel(Servo(7, 1.615 / 1000, -0.055 / 1000), None, 0.19, 0)
+        self.back_right   = Wheel(Servo(8, 1.62 / 1000, -0.055 / 1000), Servo(9, 1.5 / 1000, 1.1 / 1000), 0.15, -0.18)
         self.wheels = [self.front_left, self.center_left, self.back_left, self.front_right, self.center_right, self.back_right]
         self.rotating_wheels = [self.front_left, self.back_left, self.front_right, self.back_right]
 
@@ -147,24 +151,29 @@ class Rover:
     def __init__(self):
         self.command_queue = Queue.Queue()
         self.drivetrain = DriveTrain()
+        self.steer_axis = 0
+        self.target_steer_axis = 0
+        self.drive_axis = 0
+        self.target_drive_axis = 0
+        self.rotate_axis = 0
+        self.target_rotate_axis = 0
 
     def update(self):
-        pass
+        max_axis_ramp = 0.1
+        self.steer_axis += clamp(self.target_steer_axis - self.steer_axis, -max_axis_ramp, max_axis_ramp)
+        self.drive_axis += clamp(self.target_drive_axis - self.drive_axis, -max_axis_ramp, max_axis_ramp)
+        self.rotate_axis += clamp(self.target_rotate_axis - self.rotate_axis, -max_axis_ramp, max_axis_ramp)
 
-    def as_dict(self):
-        return {'drivetrain': self.drivetrain.as_dict()}
-
-    def control_joystick(self, steer_axis, drive_axis, rotate_axis):
-        if rotate_axis == 0:
+        if self.rotate_axis == 0:
             # Normal steering
             max_speed = Wheel.circumference * 1.0 * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
-            speed = drive_axis * max_speed
+            speed = self.drive_axis * max_speed
 
             minimum_turning_radius = 0.3 # In meters
-            if steer_axis == 0:
+            if self.steer_axis == 0:
                 turning_radius = 0
             else:
-                turning_radius = minimum_turning_radius / steer_axis
+                turning_radius = minimum_turning_radius / self.steer_axis
 
             self.drivetrain.drive(speed, turning_radius)
 
@@ -172,4 +181,12 @@ class Rover:
             # In place rotating
             pass
 
+
+    def as_dict(self):
+        return {'drivetrain': self.drivetrain.as_dict()}
+
+    def control_joystick(self, steer_axis, drive_axis, rotate_axis):
+        self.target_steer_axis = steer_axis
+        self.target_drive_axis = drive_axis
+        self.target_rotate_axis = rotate_axis
 

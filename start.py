@@ -1,7 +1,7 @@
-import server.http, server.rover, math
+import server.http, server.rover, math, threading, time
 
 rover = server.rover.Rover()
-rover.control_joystick(0.5, 0.7, 0.0)
+#rover.control_joystick(0.5, 0.7, 0.0)
 
 #rover.drivetrain.front_left.set_rotation(math.pi / 8)
 #rover.drivetrain.front_right.set_rotation(-math.pi / 8)
@@ -16,6 +16,14 @@ if False:
     rover.drivetrain.center_right.set_speed(0.3)
     rover.drivetrain.back_right.set_speed(0.3)
 
+def update_rover():
+    while True:
+        time.sleep(0.1)
+        rover.update()
+
+thread = threading.Thread(target=update_rover)
+thread.daemon = True
+thread.start()
 
 #from server.servo.servo import set_value
 #set_value(0, 1.669 / 1000)
@@ -23,4 +31,4 @@ if False:
 #set_value(3, 1.67 / 1000)
 
 
-#server.http.start_webapp(rover)
+server.http.start_webapp(rover)
