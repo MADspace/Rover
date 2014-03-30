@@ -2,30 +2,20 @@ import time, Queue, math
 import servo
 
 class Servo(object):
-    # Rotation servo parameters
-    center_rotation_pulse = 1.5 / 1000
-    quarter_rotation_pulse = 0.9 / 1000
-
-    # Continuous servo parameters
-    stopped_speed_pulse = 1.5 / 1000
-    full_speed_pulse = 0.5 / 1000 # Amount of pulse duration to add/subtract to the stopped_speed_pulse to get the servo to reach it maximum speed
-    max_rotations_per_second = 60 / 60 # Rotation speed at maximum speed
-
-    def __init__(self, channel):
+    def __init__(self, channel, neutral_pulse, full_pulse_offset):
         self.channel = channel
+        self.neutral_pulse = neutral_pulse
+        self.full_pulse_offset = full_pulse_offset
 
     def set_rotation(self, radians):
         if radians < -math.pi/2 or radians > math.pi/2:
             raise Exception("Servo can only rotate between -90 and 90 degrees")
 
-        pulse_duration = radians / (math.pi / 2) * Servo.quarter_rotation_pulse + Servo.center_rotation_pulse
+        pulse_duration = -radians / (math.pi / 2) * (self.full_pulse_offset * 2) + self.neutral_pulse
         servo.set_value(self.channel, pulse_duration)
 
     def set_speed(self, rotations_per_second):
-        if math.abs(rotations_per_second) > max_rotations_per_second:
-            raise Exception("Servo cannot rotate at %f rpm. Max rpm is %f" % (rpm, Servo.max_rotations_per_second))
-
-        pulse_duration = rotations_per_second / Servo.max_rotations_per_second * Servo.full_speed_pulse + Servo.stopped_speed_pulse
+        pulse_duration = rotations_per_second / 2 * self.full_pulse_offset + self.neutral_pulse
         servo.set_value(self.channel, pulse_duration)
 
 
@@ -74,7 +64,7 @@ class Wheel(object):
     """
     def set_speed(self, speed):
         self.speed = speed
-        self.servo_drive.set_rotation(speed / Wheel.circumference)
+        self.servo_drive.set_speed(speed / Wheel.circumference)
 
     """
     Stop the wheel dead in its track
@@ -103,12 +93,12 @@ class DriveTrain:
 
     def __init__(self):
 
-        self.front_left   = Wheel(Servo(0), Servo(1), -0.1, 0.22)
-        self.center_left  = Wheel(Servo(2), None, -0.1, 0)
-        self.back_left    = Wheel(Servo(3), Servo(4), -0.1, -0.18)
-        self.front_right  = Wheel(Servo(5), Servo(6), 0.1, 0.22)
-        self.center_right = Wheel(Servo(7), None, 0.1, 0)
-        self.back_right   = Wheel(Servo(8), Servo(9), 0.1, -0.18)
+        self.front_left   = Wheel(Servo(0, 1.62 / 1000, 0.052 / 1000), Servo(1, 1.4 / 1000, 1.1 / 1000), -0.1, 0.22)
+        self.center_left  = Wheel(Servo(2, 1.63 / 1000, 0.05881 / 1000), None, -0.1, 0)
+        self.back_left    = Wheel(Servo(3, 1.615 / 1000, 0.0588 / 1000), Servo(4, 1.5 / 1000, 1.1 / 1000), -0.1, -0.18)
+        self.front_right  = Wheel(Servo(5, 1.57 / 1000, -0.054 / 1000), Servo(6, 1.5 / 1000, 1.1 / 1000), 0.1, 0.22)
+        self.center_right = Wheel(Servo(7, 1.615 / 1000, -0.055 / 1000), None, 0.1, 0)
+        self.back_right   = Wheel(Servo(8, 1.62 / 1000, -0.055 / 1000), Servo(9, 1.5 / 1000, 1.1 / 1000), 0.1, -0.18)
         self.wheels = [self.front_left, self.center_left, self.back_left, self.front_right, self.center_right, self.back_right]
         self.rotating_wheels = [self.front_left, self.back_left, self.front_right, self.back_right]
 
@@ -167,7 +157,7 @@ class Rover:
     def control_joystick(self, steer_axis, drive_axis, rotate_axis):
         if rotate_axis == 0:
             # Normal steering
-            max_speed = Wheel.circumference * Servo.max_rotations_per_second * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
+            max_speed = Wheel.circumference * 1.0 * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
             speed = drive_axis * max_speed
 
             minimum_turning_radius = 0.3 # In meters
