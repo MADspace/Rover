@@ -63,6 +63,16 @@
           + '<span ng-hide="center">Rotation: {{wheel.rotation}} radians<br />'
           + '<input type="range" min="-0.2" max="2" step="0.02" ng-model="wheel.rotation" pause-polling></span>'
       };
+  }).directive('svgWheels', function($compile, $watch) {
+      return {
+          scope: {wheel: '='},
+					templateUrl: 'wheels.html',
+					link: function (scope, element, attrs) { 
+						  scope.$watch('wheel', function(newValue) {
+					    	  element.html($compile(template)(scope));
+							})
+					}
+      };
   }).directive('pausePolling', function($rootScope) {
       return {
           link: function(scope, element) {
@@ -114,15 +124,6 @@
 
   Sturen: <input type="range" min="-1" max="1" step="0.02" ng-model="control.steer_axis" pause-polling><input ng-model="control.steer_axis"><br />
   Snelheid: <input type="range" min="-1" max="1" step="0.02" ng-model="control.drive_axis" style="-webkit-appearance: slider-vertical" pause-polling><input ng-model="control.drive_axis"><br />
-  <svg width="300" height="300" style="border: 1px solid black;" viewBox="-0.5 -0.5 1 1">
-      <g ng-attr-transform="translate({{rover.drivetrain.front_left.x}}, {{-rover.drivetrain.front_left.y}}) rotate({{rover.drivetrain.front_left.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
-      <g ng-attr-transform="translate({{rover.drivetrain.center_left.x}}, {{-rover.drivetrain.center_left.y}}) rotate({{rover.drivetrain.center_left.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
-      <g ng-attr-transform="translate({{rover.drivetrain.back_left.x}}, {{-rover.drivetrain.back_left.y}}) rotate({{rover.drivetrain.back_left.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
-
-      <g ng-attr-transform="translate({{rover.drivetrain.front_right.x}}, {{-rover.drivetrain.front_right.y}}) rotate({{rover.drivetrain.front_right.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
-      <g ng-attr-transform="translate({{rover.drivetrain.center_right.x}}, {{-rover.drivetrain.center_right.y}}) rotate({{rover.drivetrain.center_right.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
-      <g ng-attr-transform="translate({{rover.drivetrain.back_right.x}}, {{-rover.drivetrain.back_right.y}}) rotate({{rover.drivetrain.back_right.rotation * 180 / 3.1415}} 0 0)"><rect x="-0.025" width="0.05" y="-0.05" height="0.1" class="wheel"/></g>
-
-  </svg>
+  <div svg-wheels wheel="wheel">
 </body>
 </html>
