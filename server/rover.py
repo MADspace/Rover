@@ -1,5 +1,5 @@
 import time, Queue, math
-#import servo
+import servo
 
 def clamp(val, minval, maxval):
     if val < minval: return minval
@@ -13,8 +13,8 @@ class Servo(object):
         self.full_pulse_offset = full_pulse_offset
 
     def set_rotation(self, radians):
-        if radians < -math.pi/2 or radians > math.pi/2:
-            raise Exception("Servo can only rotate between -90 and 90 degrees")
+        #if radians < -math.pi/2 or radians > math.pi/2:
+        #    raise Exception("Servo can only rotate between -90 and 90 degrees")
 
         pulse_duration = -radians / (math.pi / 2) * (self.full_pulse_offset * 2) + self.neutral_pulse
         servo.set_value(self.channel, pulse_duration)
@@ -51,6 +51,12 @@ class Wheel(object):
     """
     def set_rotation(self, radians):
         if self.servo_steer:
+            if radians > math.pi/2:
+                radians -= math.pi
+
+            if radians < -math.pi/2:
+                radians += math.pi
+
             self.rotation = radians
             self.servo_steer.set_rotation(radians)
         else:
