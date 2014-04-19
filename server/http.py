@@ -2,9 +2,13 @@ import web, sys, json
 
 render = web.template.render('static')
 
+class Debug:
+    def GET(self):
+        return open('static/index.html').read()
+
 class Main:
     def GET(self, name):
-        return open('static/index.html').read()
+        return open('static/mobile.html').read()
 
 class Status:
     def GET(self):
@@ -47,6 +51,7 @@ def start_webapp(rover):
         '/control/straight', 'Straight',
         '/control/speed', 'Speed',
         '/update/wheel/(.+)', 'UpdateWheel',
+        '/debug', 'Debug',
         '/(.*)', 'Main'
     )
     sys.modules[__name__].rover = rover

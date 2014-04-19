@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="RoverApp">
+<head>
+  <meta charset="utf-8">
+  <title>MadSpace Rover</title>
+  <!-- link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <script src="/static/angular.min.js"></script>
+  <script src="/static/jquery.min.js"></script>
+  <script src="/static/jquery.throttle.min.js"></script>
+
+  <script type="text/javascript">
+
+  angular.module('RoverApp', [])
+    .controller('RoverController', function($scope, $http) {
+      $scope.control = {'drive_axis': 0, 'steer_axis': 0, 'rotate_axis': 0};
+
+      $scope.x = 0;
+      $scope.y = 0;
+      $scope.touching = false;
+
+      $scope.onmove = function(e) {
+          var pageX = event.targetTouches ? e.targetTouches[0].pageX : e.pageX;
+          var pageY = event.targetTouches ? e.targetTouches[0].pageY : e.pageY;
+
+          $scope.x = pageX - $('.virtual_joystick').offset().left;
+          $scope.y = pageY - $('.virtual_joystick').offset().top;
+
+          if($scope.touching) {
+              $scope.control.steer_axis = $scope.x / 150 - 1;
+              $scope.control.drive_axis = $scope.y / -150 + 1;
+          }
+
+          $scope.$apply();
+
+          e.preventDefault();
+      }
+
+      $scope.$watch('control', $.throttle(150, function(control) {
+          if(control) {
+              $http.post('/control', control);
+          }
+      }), true);
+
+      $scope.onstart = function(e) {
+          $scope.touching = true;
+          $scope.onmove(e);
+      }
+      $scope.onend = function(e) {
+          $scope.control.steer_axis = 0;
+          $scope.control.drive_axis = 0;
+
+          $scope.touching = false;
+          $scope.$apply();
+      }
+
+      document.ontouchmove = $scope.onmove;
+      document.ontouchstart = $scope.onstart;
+      document.ontouchend = $scope.ondown;
+
+      document.onmousemove = $scope.onmove;
+      document.onmousedown = $scope.onstart;
+      document.onmouseup = $scope.onend;
+  });
+
+  </script>
+  <style>
+  .virtual_joystick {
+      border: 1px solid black;
+      background-color: #DDD;
+      height: 300px;
+      width: 300px;
+      position: relative;
+  }
+
+  .nub {
+      width: 100px;
+      height: 100px;
+      position: absolute;
+      background-image: url(/static/nub.png);
+      margin-left: -50px;
+      margin-top: -50px;
+      opacity: .6;
+      background-size: cover;
+  }
+  </style>
+</head>
+<body ng-controller="RoverController">
+    <div class="virtual_joystick">
+        <div ng-attr-style="top: {{y}}px; left: {{x}}px; display: {{touching?'block':'none'}}" class="nub"></div>
+    </div>
+    <div id="debug"></div>X: {{x}} y: {{y}}{{touching ? "block" : "none"}} {{control}}
+</body>
+</html>
