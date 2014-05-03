@@ -5,8 +5,10 @@
   <title>MadSpace Rover</title>
   <!-- link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" -->
   <script src="/static/angular.min.js"></script>
-	<script src="/static/bootstrap/js/bootstrap.js"></script>
-	<link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.css" />
+  <script src="/static/bootstrap/js/bootstrap.js"></script>
+  <script src="/static/jquery.min.js"></script>
+  <script src="/static/jquery.throttle.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.css" />
 
   <script type="text/javascript">
   angular.module('RoverApp', [])
@@ -21,23 +23,23 @@
 
                   $timeout(function() {$scope.updating = false});
               }
-              $timeout(tick, 10000000);
+              $timeout(tick, 1000);
           });
       }
       tick();
 
       $scope.stop = function() {
           $http.post('/control/stop');
-      }
+      };
 
       $scope.straight = function() {
           $http.post('/control/straight');
-      }
+      };
 
-      $scope.$watch('control', function(control) {
+      $scope.$watch('control', $.throttle(150, function(control) {
           if(control)
               $http.post('/control', control);
-        }, true);
+      }), true);
 
       /**
        *
