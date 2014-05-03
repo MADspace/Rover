@@ -72,6 +72,10 @@
       height: 300px;
       width: 300px;
       position: relative;
+      background-position: center;
+      background-size: contain;
+      background-image: url(http://rover.local:8080/?action=stream);
+      background-repeat: no-repeat;
   }
 
   .nub {
@@ -90,6 +94,5 @@
     <div class="virtual_joystick">
         <div ng-attr-style="top: {{y}}px; left: {{x}}px; display: {{touching?'block':'none'}}" class="nub"></div>
     </div>
-<img src="//rover.local:8080/?action=stream" />
 </body>
 </html>
