@@ -160,6 +160,8 @@ class DriveTrain:
         self.back_right.straight()
 
 class Rover:
+    # Amount of time between updates (in seconds)
+    UPDATE_PERIOD = 0.01
 
     def __init__(self):
         self.command_queue = Queue.Queue()
@@ -172,7 +174,7 @@ class Rover:
         self.target_rotate_axis = 0
 
     def update(self):
-        max_axis_ramp = 0.1
+        max_axis_ramp = Rover.UPDATE_PERIOD * 3
         self.steer_axis += clamp(self.target_steer_axis - self.steer_axis, -max_axis_ramp, max_axis_ramp)
         self.drive_axis += clamp(self.target_drive_axis - self.drive_axis, -max_axis_ramp, max_axis_ramp)
         self.rotate_axis += clamp(self.target_rotate_axis - self.rotate_axis, -max_axis_ramp, max_axis_ramp)
