@@ -11,6 +11,10 @@ def clamp(val, minval, maxval):
     return val
 
 class Servo(object):
+    """
+    Neutral pulse: The pulse duration at which the servo is in a neutral position or is not rotating
+    full_pulse_offset: The pulse duration added to the neutral pulse which results in a 90 degree clockwise rotation
+    """
     def __init__(self, channel, neutral_pulse, full_pulse_offset):
         self.channel = channel
         self.neutral_pulse = neutral_pulse
@@ -20,7 +24,7 @@ class Servo(object):
         if not LIVE_SERVO_CONTROL:
             return
 
-        pulse_duration = -radians / (math.pi / 2) * (self.full_pulse_offset * 2) + self.neutral_pulse
+        pulse_duration = radians / (math.pi / 2) * (self.full_pulse_offset * 2) + self.neutral_pulse
         servo.set_value(self.channel, pulse_duration)
 
     def set_speed(self, rotations_per_second):
@@ -110,12 +114,12 @@ class DriveTrain:
 
     def __init__(self):
 
-        self.front_left   = Wheel(Servo(0, 1.62 / 1000, 0.052 / 1000), Servo(1, 1.4 / 1000, 1.1 / 1000), -0.16, 0.22)
+        self.front_left   = Wheel(Servo(0, 1.62 / 1000, 0.052 / 1000), Servo(1, 1.4 / 1000, -1.1 / 1000), -0.16, 0.22)
         self.center_left  = Wheel(Servo(2, 1.63 / 1000, 0.05881 / 1000), None, -0.19, 0)
-        self.back_left    = Wheel(Servo(3, 1.615 / 1000, 0.0588 / 1000), Servo(4, 1.5 / 1000, 1.1 / 1000), -0.15, -0.18)
-        self.front_right  = Wheel(Servo(5, 1.57 / 1000, -0.054 / 1000), Servo(6, 1.5 / 1000, 1.1 / 1000), 0.16, 0.22)
+        self.back_left    = Wheel(Servo(3, 1.615 / 1000, 0.0588 / 1000), Servo(4, 1.5 / 1000, -1.1 / 1000), -0.15, -0.18)
+        self.front_right  = Wheel(Servo(5, 1.57 / 1000, -0.054 / 1000), Servo(6, 1.5 / 1000, -1.1 / 1000), 0.16, 0.22)
         self.center_right = Wheel(Servo(7, 1.615 / 1000, -0.055 / 1000), None, 0.19, 0)
-        self.back_right   = Wheel(Servo(8, 1.62 / 1000, -0.055 / 1000), Servo(9, 1.5 / 1000, 1.1 / 1000), 0.15, -0.18)
+        self.back_right   = Wheel(Servo(8, 1.62 / 1000, -0.055 / 1000), Servo(9, 1.5 / 1000, -1.1 / 1000), 0.15, -0.18)
         self.wheels = [self.front_left, self.center_left, self.back_left, self.front_right, self.center_right, self.back_right]
         self.rotating_wheels = [self.front_left, self.back_left, self.front_right, self.back_right]
 
@@ -159,6 +163,23 @@ class DriveTrain:
         self.front_right.straight()
         self.back_right.straight()
 
+class Webcam:
+
+    def __init__(self):
+        self.servo_yaw = Servo(12, 1.5 / 1000, 0.9 / 1000)
+        self.servo_pitch = Servo(13, 1.85 / 1000, -0.95 / 1000)
+
+
+    def set_position(self, yaw, pitch):
+        """
+        Set the position of the webcam in a relative way
+        yaw: -1 to 1 maps to looking left to looking right
+        pitch: -1 to 1 maps to looking down to looking up
+        """
+        self.servo_yaw.set_rotation(yaw * math.pi / 4)
+        self.servo_pitch.set_rotation(pitch * math.pi / 4)
+
+
 class Rover:
     # Amount of time between updates (in seconds)
     UPDATE_PERIOD = 0.01
@@ -166,6 +187,7 @@ class Rover:
     def __init__(self):
         self.command_queue = Queue.Queue()
         self.drivetrain = DriveTrain()
+        self.webcam = Webcam()
         self.steer_axis = 0
         self.target_steer_axis = 0
         self.drive_axis = 0

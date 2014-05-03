@@ -14,6 +14,7 @@
   angular.module('RoverApp', [])
     .controller('RoverController', function($scope, $rootScope, $http, $timeout) {
       $scope.control = {'drive_axis': 0, 'steer_axis': 0, 'rotate_axis': 0};
+      $scope.webcam = {'yaw': 0, 'pitch': 0};
 
       var tick = function() {
           $http.get('status').success(function (rover) {
@@ -39,6 +40,11 @@
       $scope.$watch('control', $.throttle(150, function(control) {
           if(control)
               $http.post('/control', control);
+      }), true);
+
+      $scope.$watch('webcam', $.throttle(150, function(webcam) {
+            if(webcam)
+                $http.post('/webcam', webcam);
       }), true);
 
       /**
@@ -140,6 +146,16 @@
 				  <label>Snelheid: </label>
 					<input class="form-control" type="range" min="-1" max="1" step="0.02" ng-model="control.drive_axis" style="-webkit-appearance: slider-vertical" pause-polling><br>
 					<input class="form-control" ng-model="control.drive_axis">
+				</div>
+				<div class="form-group">
+				  <label>Yaw: </label>
+					<input class="form-control" type="range" min="-1" max="1" step="0.02" ng-model="webcam.yaw" style="-webkit-appearance: slider-vertical" pause-polling><br>
+					<input class="form-control" ng-model="webcam.yaw">
+				</div>
+				<div class="form-group">
+				  <label>Pitch: </label>
+					<input class="form-control" type="range" min="-1" max="1" step="0.02" ng-model="webcam.pitch" style="-webkit-appearance: slider-vertical" pause-polling><br>
+					<input class="form-control" ng-model="webcam.pitch">
 				</div>
 			</div>
 			<div class="col-sm-4">

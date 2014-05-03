@@ -24,6 +24,12 @@ class Control:
         if control_data['steer_axis'] <> '' and control_data['drive_axis'] <> '' and control_data['rotate_axis'] <> '':
             rover.control_joystick(float(control_data['steer_axis']), float(control_data['drive_axis']), float(control_data['rotate_axis']))
 
+class Webcam:
+    def POST(self):
+        data = json.loads(web.data())
+        if data['yaw'] <> '' and data['pitch'] <> '':
+            rover.webcam.set_position(float(data['yaw']), float(data['pitch']))
+
 class Straight:
     def POST(self):
         rover.drivetrain.straight()
@@ -46,6 +52,7 @@ class UpdateWheel:
 def start_webapp(rover):
     urls = (
         '/status', 'Status',
+        '/webcam', 'Webcam',
         '/control', 'Control',
         '/control/stop', 'Stop',
         '/control/straight', 'Straight',
