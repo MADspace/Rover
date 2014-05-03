@@ -181,7 +181,7 @@ class Rover:
 
         if self.rotate_axis == 0:
             # Normal steering
-            max_speed = Wheel.circumference * 1.0 * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
+            max_speed = Wheel.circumference * 2.0 * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
             speed = self.drive_axis * max_speed
 
             minimum_turning_radius = 0.3 # In meters
