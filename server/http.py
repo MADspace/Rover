@@ -57,4 +57,4 @@ def start_webapp(rover):
     sys.modules[__name__].rover = rover
 
     app = web.application(urls, globals())
-    app.run()
+    web.httpserver.runsimple(app.wsgifunc(), ('0.0.0.0', 80))
