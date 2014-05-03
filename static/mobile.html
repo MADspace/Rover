@@ -15,6 +15,18 @@
   angular.module('RoverApp', [])
     .controller('RoverController', function($scope, $http) {
       $scope.control = {'drive_axis': 0, 'steer_axis': 0, 'rotate_axis': 0};
+      $scope.webcam = {'yaw': 0, 'pitch': 0};
+      var base_position = {'yaw': 0, 'pitch': 0};
+
+      function get_yaw_pitch(alpha, beta, gamma, orientation) {
+          if(orientation == 90) {
+              return {'yaw': -alpha, 'pitch': -gamma};
+          } else if(orientation == -90) {
+              return {'yaw': -alpha, 'pitch': gamma};
+          } else if(orientation == 0) {
+              return {'yaw': -alpha, 'pitch': beta};
+          }
+      };
 
       $scope.x = 0;
       $scope.y = 0;
@@ -44,6 +56,12 @@
           }
       }), true);
 
+      $scope.$watch('webcam', $.throttle(150, function(webcam) {
+            if(webcam) {
+                $http.post('/webcam', webcam);
+            }
+      }), true);
+
       $scope.onstart = function(e) {
           $scope.touching = true;
           $scope.onmove(e);
@@ -53,6 +71,7 @@
           $scope.control.drive_axis = 0;
 
           $scope.touching = false;
+          base_position = undefined;
           $scope.$apply();
       }
 
@@ -65,11 +84,26 @@
       document.onmouseup = $scope.onend;
 
       $(window).on('deviceorientation', function(e) {
-          $scope.alpha = e.originalEvent.alpha;
-          $scope.beta = e.originalEvent.beta;
-          $scope.gamma = e.originalEvent.gamma;
-          $scope.orientation = window.orientation;
-          $scope.$apply();
+          if(!$scope.touching) {
+              var yaw_pitch = get_yaw_pitch(e.originalEvent.alpha, e.originalEvent.beta, e.originalEvent.gamma, window.orientation);
+
+              if(!base_position)
+                  base_position = yaw_pitch;
+
+              var relative_yaw = (yaw_pitch['yaw'] - base_position['yaw']);
+              var relative_pitch = (yaw_pitch['pitch'] - base_position['pitch']);
+
+              if(relative_pitch > 180)
+                  relative_pitch -= 360;
+
+              if(relative_yaw > 180)
+                  relative_yaw -= 360;
+
+              $scope.webcam.yaw = relative_yaw / 90;
+              $scope.webcam.pitch = relative_pitch / 90;
+
+              $scope.$apply();
+          }
       });
   });
 
