@@ -1,6 +1,9 @@
 #!/usr/bin/python
 
-import server.http, server.rover, math, threading, time, subprocess
+import server.http, server.rover, math, threading, time, subprocess, os
+
+# Add this directory to the path
+os.chdir(os.path.dirname(__file__))
 
 rover = server.rover.Rover()
 
