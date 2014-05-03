@@ -24,12 +24,13 @@
           var pageX = event.targetTouches ? e.targetTouches[0].pageX : e.pageX;
           var pageY = event.targetTouches ? e.targetTouches[0].pageY : e.pageY;
 
-          $scope.x = pageX - $('.virtual_joystick').offset().left;
-          $scope.y = pageY - $('.virtual_joystick').offset().top;
+          virtual_joystick = $('.virtual_joystick');
+          $scope.x = pageX - virtual_joystick.offset().left;
+          $scope.y = pageY - virtual_joystick.offset().top;
 
           if($scope.touching) {
-              $scope.control.steer_axis = $scope.x / 150 - 1;
-              $scope.control.drive_axis = $scope.y / -150 + 1;
+              $scope.control.steer_axis = $scope.x / virtual_joystick.width() * 2 - 1;
+              $scope.control.drive_axis = $scope.y / virtual_joystick.height() * -2 + 1;
           }
 
           $scope.$apply();
@@ -62,15 +63,29 @@
       document.onmousemove = $scope.onmove;
       document.onmousedown = $scope.onstart;
       document.onmouseup = $scope.onend;
+
+      $(window).on('deviceorientation', function(e) {
+          $scope.alpha = e.originalEvent.alpha;
+          $scope.beta = e.originalEvent.beta;
+          $scope.gamma = e.originalEvent.gamma;
+          $scope.orientation = window.orientation;
+          $scope.$apply();
+      });
   });
 
   </script>
   <style>
+
+  html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+  }
   .virtual_joystick {
       border: 1px solid black;
       background-color: #DDD;
-      height: 300px;
-      width: 300px;
+      height: 100%;
+      width: 100%;
       position: relative;
       background-position: center;
       background-size: contain;

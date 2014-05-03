@@ -1,5 +1,9 @@
-import time, Queue, math
-import servo
+import time, Queue, math, os
+
+LIVE_SERVO_CONTROL = os.uname()[1] == 'rover'
+
+if LIVE_SERVO_CONTROL:
+    import servo
 
 def clamp(val, minval, maxval):
     if val < minval: return minval
@@ -13,13 +17,16 @@ class Servo(object):
         self.full_pulse_offset = full_pulse_offset
 
     def set_rotation(self, radians):
-        #if radians < -math.pi/2 or radians > math.pi/2:
-        #    raise Exception("Servo can only rotate between -90 and 90 degrees")
+        if not LIVE_SERVO_CONTROL:
+            return
 
         pulse_duration = -radians / (math.pi / 2) * (self.full_pulse_offset * 2) + self.neutral_pulse
         servo.set_value(self.channel, pulse_duration)
 
     def set_speed(self, rotations_per_second):
+        if not LIVE_SERVO_CONTROL:
+            return
+
         pulse_duration = rotations_per_second / 2 * self.full_pulse_offset + self.neutral_pulse
         servo.set_value(self.channel, pulse_duration)
 
