@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import server.http, server.rover, math, threading, time, subprocess
 
 rover = server.rover.Rover()
