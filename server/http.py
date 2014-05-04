@@ -8,7 +8,7 @@ class Debug:
 
 class Main:
     def GET(self, name):
-        return open('static/mobile.html').read()
+        return open('static/mobile.html').read().replace('DOMAIN', web.ctx.host)
 
 class Status:
     def GET(self):
