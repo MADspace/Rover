@@ -108,6 +108,9 @@ class Wheel(object):
         self.set_speed(wheel_speed)
         self.set_rotation(wheel_rotation)
 
+    def rotate(self, speed):
+        self.drive(speed, math.sqrt(self.position_x*self.position_x+
+                                  self.position_y*self.position_y))
 
 class DriveTrain:
     ROTATION_SPEED = 0.1
@@ -138,8 +141,9 @@ class DriveTrain:
         for wheel in self.wheels:
             wheel.drive(speed, turning_radius)
 
-    def rotate(self, radians):
-        pass
+    def rotate(self, speed):
+        for wheel in self.wheels:
+            wheel.rotate(speed)
 
     def stop(self):
         self.front_left.stop()
@@ -201,10 +205,11 @@ class Rover:
         self.drive_axis += clamp(self.target_drive_axis - self.drive_axis, -max_axis_ramp, max_axis_ramp)
         self.rotate_axis += clamp(self.target_rotate_axis - self.rotate_axis, -max_axis_ramp, max_axis_ramp)
 
+        max_speed = Wheel.circumference * 2.0 * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
+        speed = self.drive_axis * max_speed
+
         if self.rotate_axis == 0:
             # Normal steering
-            max_speed = Wheel.circumference * 2.0 * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
-            speed = self.drive_axis * max_speed
 
             minimum_turning_radius = 0.3 # In meters
             if self.steer_axis == 0:
@@ -216,7 +221,7 @@ class Rover:
 
         else:
             # In place rotating
-            pass
+            self.drivetrain.rotate(speed)
 
 
     def as_dict(self):
