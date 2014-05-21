@@ -206,10 +206,10 @@ class Rover:
         self.rotate_axis += clamp(self.target_rotate_axis - self.rotate_axis, -max_axis_ramp, max_axis_ramp)
 
         max_speed = Wheel.circumference * 2.0 * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
-        speed = self.drive_axis * max_speed
 
-        if self.rotate_axis == 0:
+        if abs(self.drive_axis) < 0.01:
             # Normal steering
+            speed = self.drive_axis * max_speed
 
             minimum_turning_radius = 0.3 # In meters
             if self.steer_axis == 0:
@@ -221,6 +221,7 @@ class Rover:
 
         else:
             # In place rotating
+            speed = self.steer_axis * max_speed
             self.drivetrain.rotate(speed)
 
 
