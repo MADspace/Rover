@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-import server.http, math, threading, time, subprocess, os
+import server.http, math, threading, time, subprocess, os, sys
 from server.rover import Rover, Servo
 
 s = Servo(11, 1.4 / 1000, 1.1 / 1000)
 s.set_rotation(0.0)
 
 # Add this directory to the path
-os.chdir(os.path.dirname(__file__))
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 rover = Rover()
 
@@ -22,4 +22,7 @@ thread = threading.Thread(target=update_rover)
 thread.daemon = True
 thread.start()
 
-server.http.start_webapp(rover)
+port = 80
+if len(sys.argv) > 1: port = int(sys.argv[1])
+
+server.http.start_webapp(rover, port)

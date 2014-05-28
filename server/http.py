@@ -49,7 +49,7 @@ class UpdateWheel:
         wheel.set_speed(float(wheel_data['speed']))
 
 
-def start_webapp(rover):
+def start_webapp(rover, port=80):
     urls = (
         '/status', 'Status',
         '/webcam', 'Webcam',
@@ -64,4 +64,4 @@ def start_webapp(rover):
     sys.modules[__name__].rover = rover
 
     app = web.application(urls, globals())
-    web.httpserver.runsimple(app.wsgifunc(), ('0.0.0.0', 80))
+    web.httpserver.runsimple(app.wsgifunc(), ('0.0.0.0', port))
