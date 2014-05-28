@@ -108,9 +108,18 @@ class Wheel(object):
         self.set_speed(wheel_speed)
         self.set_rotation(wheel_rotation)
 
-    def rotate(self, speed):
-        self.drive(speed, math.sqrt(self.position_x*self.position_x+
-                                  self.position_y*self.position_y))
+    """
+    Rotate the wheel such that the rover rotates around its own center
+    """
+    def rotate_around_center(self, rotations_per_second):
+        circumference = math.sqrt(self.position_x*self.position_x + self.position_y*self.position_y)
+        speed = circumference * rotations_per_second
+
+        if self.position_x > 0:
+            speed = -speed
+
+        self.set_speed(speed)
+        self.set_rotation(-math.atan2(self.position_y, self.position_x))
 
 class DriveTrain:
     ROTATION_SPEED = 0.1
@@ -141,9 +150,14 @@ class DriveTrain:
         for wheel in self.wheels:
             wheel.drive(speed, turning_radius)
 
-    def rotate(self, speed):
+    """
+    Rotate the rover around its own center
+    With a positive value for rotations_per_second the rover turns clockwise.
+    And with a negative value the rover turns counter-clockwise
+    """
+    def rotate(self, rotations_per_second):
         for wheel in self.wheels:
-            wheel.rotate(speed)
+            wheel.rotate_around_center(rotations_per_second)
 
     def stop(self):
         self.front_left.stop()
@@ -207,7 +221,7 @@ class Rover:
 
         max_speed = Wheel.circumference * 2.0 * 0.9 # Slack speed to allow outer steering wheels to turn a little faster
 
-        if abs(self.drive_axis) < 0.01:
+        if abs(self.drive_axis) > 0.01:
             # Normal steering
             speed = self.drive_axis * max_speed
 
@@ -219,10 +233,12 @@ class Rover:
 
             self.drivetrain.drive(speed, turning_radius)
 
-        else:
+        elif abs(self.steer_axis) > 0.1:
             # In place rotating
-            speed = self.steer_axis * max_speed
-            self.drivetrain.rotate(speed)
+            self.drivetrain.rotate(self.steer_axis)
+        else:
+            # Neutral
+            self.drivetrain.drive(0, 0)
 
 
     def as_dict(self):
