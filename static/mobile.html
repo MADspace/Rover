@@ -33,21 +33,21 @@
       $scope.touching = false;
 
       $scope.onmove = function(e) {
-          var pageX = event.targetTouches ? e.targetTouches[0].pageX : e.pageX;
-          var pageY = event.targetTouches ? e.targetTouches[0].pageY : e.pageY;
+          if (!$scope.touching) return;
+
+          e.preventDefault();
+
+          var pageX = e.targetTouches ? e.targetTouches[0].pageX : e.pageX;
+          var pageY = e.targetTouches ? e.targetTouches[0].pageY : e.pageY;
 
           virtual_joystick = $('.virtual_joystick');
           $scope.x = pageX - virtual_joystick.offset().left;
           $scope.y = pageY - virtual_joystick.offset().top;
 
-          if($scope.touching) {
-              $scope.control.steer_axis = $scope.x / virtual_joystick.width() * 2 - 1;
-              $scope.control.drive_axis = $scope.y / virtual_joystick.height() * -2 + 1;
-          }
+          $scope.control.steer_axis = $scope.x / virtual_joystick.width() * 2 - 1;
+          $scope.control.drive_axis = $scope.y / virtual_joystick.height() * -2 + 1;
 
           $scope.$apply();
-
-          e.preventDefault();
       }
 
       $scope.$watch('control', $.throttle(150, function(control) {
@@ -75,13 +75,13 @@
           $scope.$apply();
       }
 
-      document.ontouchmove = $scope.onmove;
-      document.ontouchstart = $scope.onstart;
-      document.ontouchend = $scope.onend;
+      $(document).on('touchmove', $scope.onmove);
+      $(document).on('touchstart', $scope.onstart);
+      $(document).on('touchend', $scope.onend);
 
-      document.onmousemove = $scope.onmove;
-      document.onmousedown = $scope.onstart;
-      document.onmouseup = $scope.onend;
+      $(document).on('mousemove', $scope.onmove);
+      $(document).on('mousedown', $scope.onstart);
+      $(document).on('mouseup', $scope.onend);
 
       $(window).on('deviceorientation', function(e) {
           if(!$scope.touching) {
