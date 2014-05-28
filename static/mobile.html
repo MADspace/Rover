@@ -44,8 +44,20 @@
           $scope.x = pageX - virtual_joystick.offset().left;
           $scope.y = pageY - virtual_joystick.offset().top;
 
-          $scope.control.steer_axis = $scope.x / virtual_joystick.width() * 2 - 1;
-          $scope.control.drive_axis = $scope.y / virtual_joystick.height() * -2 + 1;
+          switch(e.which) {
+              case 1:
+                  // Left mouse button
+                  $scope.control.steer_axis = $scope.x / virtual_joystick.width() * 2 - 1;
+                  $scope.control.drive_axis = $scope.y / virtual_joystick.height() * -2 + 1;
+                  break;
+              case 3:
+                  // Right mouse button
+                  $scope.webcam.yaw = $scope.x / virtual_joystick.width() * 2 - 1;
+                  $scope.webcam.pitch = $scope.y / virtual_joystick.height() * -2 + 1;
+                  break;
+             default:
+                  // Unhandled
+          }
 
           $scope.$apply();
       }
@@ -82,6 +94,9 @@
       $(document).on('mousemove', $scope.onmove);
       $(document).on('mousedown', $scope.onstart);
       $(document).on('mouseup', $scope.onend);
+      $(document).on('contextmenu', function(e) {
+          e.preventDefault();
+      });
 
       $(window).on('deviceorientation', function(e) {
           if(!$scope.touching) {
