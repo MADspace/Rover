@@ -31,6 +31,8 @@
       $scope.x = 0;
       $scope.y = 0;
       $scope.touching = false;
+      $scope.moving_rover = false;
+      $scope.moving_camera = false;
 
       $scope.onmove = function(e) {
           if (!$scope.touching) return;
@@ -44,19 +46,13 @@
           $scope.x = pageX - virtual_joystick.offset().left;
           $scope.y = pageY - virtual_joystick.offset().top;
 
-          switch(e.which) {
-              case 1:
-                  // Left mouse button
-                  $scope.control.steer_axis = $scope.x / virtual_joystick.width() * 2 - 1;
-                  $scope.control.drive_axis = $scope.y / virtual_joystick.height() * -2 + 1;
-                  break;
-              case 3:
-                  // Right mouse button
-                  $scope.webcam.yaw = $scope.x / virtual_joystick.width() * 2 - 1;
-                  $scope.webcam.pitch = $scope.y / virtual_joystick.height() * -2 + 1;
-                  break;
-             default:
-                  // Unhandled
+          if($scope.moving_rover) {
+              $scope.control.steer_axis = $scope.x / virtual_joystick.width() * 2 - 1;
+              $scope.control.drive_axis = $scope.y / virtual_joystick.height() * -2 + 1;
+          }
+          else if($scope.moving_camera) {
+              $scope.webcam.yaw = $scope.x / virtual_joystick.width() * 2 - 1;
+              $scope.webcam.pitch = $scope.y / virtual_joystick.height() * -2 + 1;
           }
 
           $scope.$apply();
@@ -75,6 +71,20 @@
       }), true);
 
       $scope.onstart = function(e) {
+          switch(e.which) {
+              case 1:
+                  // Left mouse button
+                  $scope.moving_rover = true;
+                  break;
+              case 3:
+                  // Right mouse button
+                  $scope.moving_camera = true;
+                  break;
+              default:
+                  // Unhandled button
+                  return;
+          }
+
           $scope.touching = true;
           $scope.onmove(e);
       }
