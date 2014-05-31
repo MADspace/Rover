@@ -24,5 +24,12 @@ thread.start()
 
 port = 80
 if len(sys.argv) > 1: port = int(sys.argv[1])
+if port == 8080:
+    print('Port 8080 is already used by mjpg_streamer')
+    p.kill()
+    sys.exit(1)
 
-server.http.start_webapp(rover, port)
+try:
+    server.http.start_webapp(rover, port)
+except:
+    p.kill()
