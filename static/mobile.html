@@ -75,6 +75,43 @@
           $scope.$apply();
       }
 
+      $scope.onkeydown = function(e) {
+          if($scope.touching) return;
+
+          var keys = {
+              72: function() { $scope.control.steer_axis -= .1 }, // h
+              74: function() { $scope.control.drive_axis -= .1 }, // j
+              75: function() { $scope.control.drive_axis += .1 }, // k
+              76: function() { $scope.control.steer_axis += .1 }, // l
+              89: function() { keys[72].call(this); keys[75].call(this); }, // y
+              85: function() { keys[76].call(this); keys[75].call(this); }, // u
+              66: function() { keys[72].call(this); keys[74].call(this); }, // b
+              78: function() { keys[76].call(this); keys[74].call(this); }, // n
+          };
+
+          var keys_shift = {
+              72: function() { $scope.webcam.yaw -= .1 }, // h
+              74: function() { $scope.webcam.pitch -= .1 }, // j
+              75: function() { $scope.webcam.pitch += .1 }, // k
+              76: function() { $scope.webcam.yaw += .1 }, // l
+              89: function() { keys_shift[72].call(this); keys_shift[75].call(this); }, // y
+              85: function() { keys_shift[76].call(this); keys_shift[75].call(this); }, // u
+              66: function() { keys_shift[72].call(this); keys_shift[74].call(this); }, // b
+              78: function() { keys_shift[76].call(this); keys_shift[74].call(this); }, // n
+          };
+
+          if(!keys[e.keyCode] && !keys_shift[e.keyCode]) return;
+
+          e.preventDefault();
+
+          if(e.shiftKey)
+            keys_shift[e.keyCode].call(this);
+          else
+            keys[e.keyCode].call(this);
+
+          $scope.$apply();
+      };
+
       $(document).on('touchmove', $scope.onmove);
       $(document).on('touchstart', $scope.onstart);
       $(document).on('touchend', $scope.onend);
@@ -83,27 +120,29 @@
       $(document).on('mousedown', $scope.onstart);
       $(document).on('mouseup', $scope.onend);
 
+      $(document).on('keydown', $scope.onkeydown);
+
       $(window).on('deviceorientation', function(e) {
-          if(!$scope.touching) {
-              var yaw_pitch = get_yaw_pitch(e.originalEvent.alpha, e.originalEvent.beta, e.originalEvent.gamma, window.orientation);
+        if($scope.touching) return;
 
-              if(!base_position)
-                  base_position = yaw_pitch;
+        var yaw_pitch = get_yaw_pitch(e.originalEvent.alpha, e.originalEvent.beta, e.originalEvent.gamma, window.orientation);
 
-              var relative_yaw = (yaw_pitch['yaw'] - base_position['yaw']);
-              var relative_pitch = (yaw_pitch['pitch'] - base_position['pitch']);
+        if(!base_position)
+            base_position = yaw_pitch;
 
-              if(relative_pitch > 180)
-                  relative_pitch -= 360;
+        var relative_yaw = (yaw_pitch['yaw'] - base_position['yaw']);
+        var relative_pitch = (yaw_pitch['pitch'] - base_position['pitch']);
 
-              if(relative_yaw > 180)
-                  relative_yaw -= 360;
+        if(relative_pitch > 180)
+            relative_pitch -= 360;
 
-              $scope.webcam.yaw = relative_yaw / 90;
-              $scope.webcam.pitch = relative_pitch / 90;
+        if(relative_yaw > 180)
+            relative_yaw -= 360;
 
-              $scope.$apply();
-          }
+        $scope.webcam.yaw = relative_yaw / 90;
+        $scope.webcam.pitch = relative_pitch / 90;
+
+        $scope.$apply();
       });
   });
 
